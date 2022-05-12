@@ -35,6 +35,7 @@ kotlin {
             dependencies {
                 implementation(kotlin("test-junit"))
                 implementation("junit:junit:4.13.2")
+                implementation("org.robolectric:robolectric:4.8.1")
             }
         }
         val iosX64Main by getting
