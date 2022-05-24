@@ -1,7 +1,7 @@
 package com.blakebarrett.hellokmm
 
-import platform.UIKit.UIDevice
+import swift.Bridge.StaticLibrary
 
 actual class Platform actual constructor() {
-    actual val platform: String = UIDevice.currentDevice.systemName() + " " + UIDevice.currentDevice.systemVersion
+    actual val platform: String = StaticLibrary.test()
 }
