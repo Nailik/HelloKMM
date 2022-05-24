@@ -3,11 +3,12 @@ package com.blakebarrett.hellokmm
 import kotlin.test.Test
 import kotlin.test.assertTrue
 
-class CommonGreetingTest : UsingContextTest() {
+class CommonGreetingTest {
 
     @Test
     fun testExample() {
-        assertTrue(Greeting().greeting().contains("Hello"), "Check 'Hello' is mentioned")
+        //for ios
+        assertTrue(Platform().platform == "testWorked!")
     }
 
 }
