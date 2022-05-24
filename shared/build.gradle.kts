@@ -1,3 +1,6 @@
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+import org.apache.tools.ant.taskdefs.condition.Os
+
 plugins {
     kotlin("multiplatform")
     kotlin("native.cocoapods")
@@ -7,10 +10,44 @@ plugins {
 version = "1.0"
 
 kotlin {
+    fun KotlinNativeTarget.configBridge(platform: String) {
+        if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+            println("building Swift is not supported on windows")
+        } else {
+            compilations.getByName("main") {
+                cinterops.create("StaticLibrary") {
+                    extraOpts("-libraryPath", "$rootDir/iosApp/StaticLibrary/build/Release-$platform")
+                    val interopTask = tasks[interopProcessingTaskName]
+                    //necessary to run this task first
+                    interopTask.dependsOn(":iosApp:StaticLibrary:build${platform.capitalize()}")
+                    //check if swift header has changed
+                    headers(file("$rootDir/iosApp/StaticLibrary/build/Release-$platform/include/StaticLibrary/StaticLibrary-Swift.h"))
+                    //this includes the files so the .def file can find the header etc
+                    includeDirs.headerFilterOnly("$rootDir/iosApp/StaticLibrary/build/Release-$platform/include")
+
+                    binaries {
+                        all {
+                            //adds libswiftCompatibilityConcurrency
+                            linkerOpts.add("-L/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/$platform")
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     android()
-    iosX64()
-    iosArm64()
-    iosSimulatorArm64()  // sure all ios dependencies support this target
+    iosX64 {
+        this.configBridge("iphonesimulator")
+    }
+
+    iosArm64 {
+        this.configBridge("iphoneos")
+    }
+
+    iosSimulatorArm64 {
+        this.configBridge("iphonesimulator")
+    }
 
     cocoapods {
         summary = "Some description for the Shared Module"
@@ -66,4 +103,7 @@ android {
         minSdk = 21
         targetSdk = 32
     }
+
+    testOptions.unitTests.isIncludeAndroidResources = true
+    testOptions.unitTests.isReturnDefaultValues = true
 }
